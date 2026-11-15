@@ -131,3 +131,45 @@ test("clear data removes stored budget and resets to defaults", async ({ page })
 		.poll(() => page.evaluate(() => localStorage.getItem("offline-suite:monthly-budget")))
 		.toContain("2600");
 });
+
+test("adds up to two extra incomes with their own cards next to duodécimos", async ({ page }) => {
+	const add = page.getByTestId("add-income");
+	const fields = page.getByTestId("extra-income");
+
+	await add.click();
+	await expect(fields).toHaveCount(1);
+	await expect(fields.first()).toBeFocused();
+	await expect(cards(page)).toHaveCount(5);
+	await expect(cards(page).nth(4).getByLabel("Category name")).toHaveValue("Extra income 1");
+
+	await add.click();
+	await expect(fields).toHaveCount(2);
+	await expect(add).toHaveCount(0); // limit reached
+
+	await fields.nth(0).fill("400");
+	await fields.nth(1).fill("100");
+	await expect(page.getByLabel("Extra income 1", { exact: true })).toHaveValue("400");
+	// 2500 income + 400 + 100, nothing tracked yet
+	await expect(page.getByTestId("total-unallocated")).toHaveText("€3,000.00 unallocated");
+	await expect(cards(page).nth(4).getByTestId("category-remaining")).toHaveText(
+		"€400.00 remaining"
+	);
+
+	// Renaming the card renames the field label.
+	await cards(page).nth(5).getByLabel("Category name").fill("Freelance");
+	await expect(page.getByLabel("Freelance", { exact: true })).toHaveValue("100");
+
+	// Survives a reload.
+	await page.reload();
+	await expect(fields).toHaveCount(2);
+
+	await page.getByRole("button", { name: "Remove Extra income 1" }).click();
+	await expect(fields).toHaveCount(1);
+	await expect(cards(page)).toHaveCount(5);
+	await expect(add).toBeVisible();
+	await expect(page.getByTestId("total-unallocated")).toHaveText("€2,600.00 unallocated");
+
+	// The freed name is reused.
+	await add.click();
+	await expect(cards(page).nth(5).getByLabel("Category name")).toHaveValue("Extra income 1");
+});

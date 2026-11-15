@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowUpRight, GitFork } from "@lucide/svelte";
+	import { ArrowUpRight, Bot, GitFork } from "@lucide/svelte";
 	import { apps } from "#lib/apps.js";
 	import BrandLogo from "./BrandLogo.svelte";
 
@@ -62,5 +62,16 @@
 				class="size-3.5 text-slate-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
 			/>
 		</a>
+	</div>
+
+	<div class="border-t border-slate-200 dark:border-slate-800">
+		<p
+			class="mx-auto flex max-w-7xl items-start gap-2 px-4 py-4 text-xs text-slate-500 dark:text-slate-400"
+			data-testid="ai-disclaimer"
+		>
+			<Bot class="mt-px size-3.5 shrink-0" />
+			AI tools were used in the development of oSuite. The code is open source, so you can review
+			it yourself.
+		</p>
 	</div>
 </footer>

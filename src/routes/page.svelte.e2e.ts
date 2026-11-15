@@ -80,3 +80,8 @@ test("link-preview tags, sitemap and robots use the serving origin", async ({
 	expect(robots).toContain("User-agent: Googlebot");
 	expect(robots).toContain(`Sitemap: ${site}/sitemap.xml`);
 });
+
+test("footer discloses AI use", async ({ page }) => {
+	await page.goto("/");
+	await expect(page.getByTestId("ai-disclaimer")).toContainText("AI tools were used");
+});

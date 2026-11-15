@@ -61,13 +61,7 @@
 				class="h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-base font-bold hover:border-slate-200 focus:border-violet-400 focus:ring-0 focus:outline-none dark:hover:border-slate-700"
 			/>
 
-			{#if category.fixed}
-				<div
-					class="flex h-8 shrink-0 items-center pr-2 text-[11px] font-semibold tracking-wide text-slate-400 uppercase"
-				>
-					Fixed
-				</div>
-			{:else}
+			{#if !category.fixed}
 				<NumberInput
 					bind:value={category.percentage}
 					max={100}

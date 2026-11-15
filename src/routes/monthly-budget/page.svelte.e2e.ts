@@ -57,7 +57,7 @@ test("warns when percentages exceed 100%", async ({ page }) => {
 test("duodécimos card uses the duodécimos amount as target", async ({ page }) => {
 	await page.getByTestId("duodecimos").fill("300");
 	const duo = cards(page).nth(3);
-	await expect(duo).toContainText("Fixed");
+	await expect(duo.getByLabel("Category percentage")).toHaveCount(0);
 	await expect(duo.getByTestId("category-remaining")).toHaveText("€300.00 remaining");
 	await expect(page.getByTestId("total-unallocated")).toHaveText("€2,800.00 unallocated");
 });

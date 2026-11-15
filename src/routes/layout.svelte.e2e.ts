@@ -16,7 +16,7 @@ for (const width of [390, 1024, 1600]) {
 	test.describe(`at ${width}px`, () => {
 		test.use({ viewport: { width, height: 900 } });
 
-		for (const path of ["/", "/monthly-budget"]) {
+		for (const path of ["/", "/monthly-budget", "/vat-calculator"]) {
 			test(`${path} content aligns with the navbar`, async ({ page }) => {
 				await page.goto(path);
 				const { nav, main } = await edges(page);

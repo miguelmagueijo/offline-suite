@@ -1,5 +1,5 @@
 import type { Component } from "svelte";
-import { PiggyBank } from "@lucide/svelte";
+import { PiggyBank, ReceiptEuro } from "@lucide/svelte";
 import type { RouteId } from "$app/types";
 
 /**
@@ -25,5 +25,13 @@ export const apps: AppEntry[] = [
 		icon: PiggyBank,
 		accent: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
 		tags: ["Finance"]
+	},
+	{
+		href: "/vat-calculator",
+		name: "VAT Calculator",
+		description: "Add or remove VAT from a price and total up a mini cart of items.",
+		icon: ReceiptEuro,
+		accent: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+		tags: ["Finance", "Tax"]
 	}
 ];

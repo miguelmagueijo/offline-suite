@@ -3,6 +3,7 @@
 	import { resolve } from "$app/paths";
 	import { apps } from "#lib/apps.js";
 	import BrandLogo from "#lib/components/BrandLogo.svelte";
+	import SeoHead from "#lib/components/SeoHead.svelte";
 
 	let query = $state("");
 
@@ -17,9 +18,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>oSuite · Offline browser tools</title>
-</svelte:head>
+<SeoHead path="/" />
 
 <div class="relative grow overflow-hidden">
 	<!-- Decorative dotted background -->
@@ -33,8 +32,8 @@
 			<BrandLogo class="size-20 drop-shadow-[0_8px_24px_rgb(124_58_237/0.35)] sm:size-24" />
 			<h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">oSuite</h1>
 			<p class="mx-auto mt-3 max-w-xl text-slate-500 dark:text-slate-400">
-				A collection of small, focused tools that run entirely in your browser. Your data
-				never leaves this device.
+				Small, open-source tools to help you organise your life. Everything runs in your
+				browser and nothing is sent to a server. Use it here or host it yourself.
 			</p>
 
 			<label class="relative mt-8 block w-full max-w-md">

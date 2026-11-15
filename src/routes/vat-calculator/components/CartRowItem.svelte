@@ -22,7 +22,7 @@
 	}
 
 	const cell =
-		"no-spin h-8 w-full rounded-md border bg-white px-2 text-sm focus:border-blue-400 focus:ring-0 focus:outline-none dark:bg-slate-950";
+		"no-spin h-8 w-full rounded-md border bg-white px-2 text-sm focus:border-violet-400 focus:ring-0 focus:outline-none dark:bg-slate-950";
 	const border = $derived(
 		invalid ? "border-red-400 dark:border-red-500/70" : "border-slate-200 dark:border-slate-800"
 	);

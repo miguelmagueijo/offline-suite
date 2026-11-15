@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { apps } from "#lib/apps.js";
+	import SeoHead from "#lib/components/SeoHead.svelte";
+
+	const app = apps.find((entry) => entry.href === "/vat-calculator")!;
 	import MiniCart from "./components/MiniCart.svelte";
 	import VatCalculator from "./components/VatCalculator.svelte";
 </script>
 
-<svelte:head>
-	<title>VAT Calculator · Offline Suite</title>
-</svelte:head>
+<SeoHead title="VAT Calculator" description={app.description} path="/vat-calculator" />
 
 <div class="py-6">
 	<header class="mb-4">

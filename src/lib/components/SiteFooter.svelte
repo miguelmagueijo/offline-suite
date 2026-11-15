@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowUpRight, GitFork, LayoutGrid } from "@lucide/svelte";
+	import { ArrowUpRight, Bot, GitFork } from "@lucide/svelte";
 	import { apps } from "#lib/apps.js";
+	import BrandLogo from "./BrandLogo.svelte";
 
 	const REPO_URL = "https://github.com/miguelmagueijo/offline-suite";
 </script>
 
 <footer
-	class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+	class="border-t border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900/40"
 	data-testid="site-footer"
 >
 	<div
@@ -16,10 +17,10 @@
 	>
 		<a
 			href={resolve("/")}
-			class="inline-flex items-center gap-2 text-lg font-bold tracking-tight"
+			class="inline-flex items-center gap-2.5 text-lg font-bold tracking-tight"
 		>
-			<LayoutGrid class="size-5 text-blue-600 dark:text-blue-400" />
-			Offline Suite
+			<BrandLogo class="size-7" />
+			oSuite
 		</a>
 
 		<nav aria-label="Apps">
@@ -36,7 +37,7 @@
 						<a
 							href={resolve(app.href)}
 							aria-current={current ? "page" : undefined}
-							class="inline-flex items-center gap-2 text-sm transition hover:text-blue-600 dark:hover:text-blue-400 {current
+							class="inline-flex items-center gap-2 text-sm transition hover:text-violet-600 dark:hover:text-violet-400 {current
 								? 'font-semibold text-slate-900 dark:text-slate-100'
 								: 'text-slate-600 dark:text-slate-400'}"
 						>
@@ -61,5 +62,16 @@
 				class="size-3.5 text-slate-400 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
 			/>
 		</a>
+	</div>
+
+	<div class="border-t border-slate-200 dark:border-slate-800">
+		<p
+			class="mx-auto flex max-w-7xl items-start gap-2 px-4 py-4 text-xs text-slate-500 dark:text-slate-400"
+			data-testid="ai-disclaimer"
+		>
+			<Bot class="mt-px size-3.5 shrink-0" />
+			AI tools were used in the development of oSuite. The code is open source, so you can review
+			it yourself.
+		</p>
 	</div>
 </footer>

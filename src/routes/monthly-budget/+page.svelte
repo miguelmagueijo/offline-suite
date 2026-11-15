@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { apps } from "#lib/apps.js";
+	import SeoHead from "#lib/components/SeoHead.svelte";
 	import { onMount } from "svelte";
 	import { Download, Plus, Trash2, TriangleAlert, Upload } from "@lucide/svelte";
 	import {
@@ -15,6 +17,8 @@
 	import NumberInput from "./components/NumberInput.svelte";
 	import OverviewChip from "./components/OverviewChip.svelte";
 	import ProgressBar from "./components/ProgressBar.svelte";
+
+	const app = apps.find((entry) => entry.href === "/monthly-budget")!;
 
 	const budget = new Budget();
 
@@ -65,14 +69,12 @@
 	}
 
 	const mainField =
-		"h-10 rounded-md border border-slate-300 bg-white pr-8 pl-3 text-lg font-bold text-slate-900 shadow-xs placeholder:font-normal placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600 dark:hover:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/25";
+		"h-10 rounded-md border border-slate-300 bg-white pr-8 pl-3 text-lg font-bold text-slate-900 shadow-xs placeholder:font-normal placeholder:text-slate-400 hover:border-slate-400 focus:border-violet-500 focus:ring-3 focus:ring-violet-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600 dark:hover:border-slate-600 dark:focus:border-violet-400 dark:focus:ring-violet-400/25";
 	const fieldLabel =
 		"mb-1 block truncate text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400";
 </script>
 
-<svelte:head>
-	<title>Monthly Budget · Offline Suite</title>
-</svelte:head>
+<SeoHead title="Monthly Budget" description={app.description} path="/monthly-budget" />
 
 <div class="py-6">
 	<header class="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

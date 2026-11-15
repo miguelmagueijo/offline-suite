@@ -3,8 +3,7 @@
 	import { onMount } from "svelte";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { LayoutGrid } from "@lucide/svelte";
-	import favicon from "#lib/assets/favicon.svg";
+	import BrandLogo from "#lib/components/BrandLogo.svelte";
 	import SiteFooter from "#lib/components/SiteFooter.svelte";
 	import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 	import { theme } from "#lib/theme.svelte.js";
@@ -17,10 +16,6 @@
 	const isHome = $derived(page.url.pathname === "/");
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
-
 <div class="flex min-h-screen flex-col">
 	<header
 		class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80"
@@ -28,11 +23,11 @@
 		<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5">
 			<a
 				href={resolve("/")}
-				class="inline-flex items-center gap-2 text-lg font-bold tracking-tight"
+				class="inline-flex items-center gap-2.5 text-xl font-bold tracking-tight"
 				aria-current={isHome ? "page" : undefined}
 			>
-				<LayoutGrid class="size-5 text-blue-600 dark:text-blue-400" />
-				Offline Suite
+				<BrandLogo class="size-8" />
+				oSuite
 			</a>
 			<ThemeToggle />
 		</div>

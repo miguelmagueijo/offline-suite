@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { apps } from "#lib/apps.js";
 	import SeoHead from "#lib/components/SeoHead.svelte";
-	import { onMount } from "svelte";
-	import { Download, Plus, Trash2, TriangleAlert, Upload } from "@lucide/svelte";
+	import { onMount, tick } from "svelte";
+	import { Download, Plus, Trash2, TriangleAlert, Upload, X } from "@lucide/svelte";
 	import {
 		Budget,
 		clearStorage,
@@ -56,6 +56,15 @@
 		budget.totalBudget > 0 ? (budget.totalTracked / budget.totalBudget) * 100 : 0
 	);
 
+	let incomesEl: HTMLDivElement | undefined = $state();
+
+	async function addIncome() {
+		if (!budget.addExtraIncome()) return;
+		await tick();
+		const fields = incomesEl?.querySelectorAll<HTMLInputElement>("[data-testid=extra-income]");
+		fields?.[fields.length - 1]?.focus();
+	}
+
 	async function onImport(event: Event & { currentTarget: HTMLInputElement }) {
 		const input = event.currentTarget;
 		const file = input.files?.[0];
@@ -73,6 +82,12 @@
 	const fieldLabel =
 		"mb-1 block truncate text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400";
 </script>
+
+{#snippet plus()}
+	<span class="flex h-10 shrink-0 items-center text-slate-400 max-sm:hidden">
+		<Plus class="size-5" />
+	</span>
+{/snippet}
 
 <SeoHead title="Monthly Budget" description={app.description} path="/monthly-budget" />
 
@@ -127,10 +142,12 @@
 			class="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
 			<div class="flex flex-col gap-3">
+				<!-- Phones: two fields per row. sm+: one line joined by "+" signs. -->
 				<div
-					class="flex items-end gap-2 border-b border-slate-100 pb-3 sm:gap-3 dark:border-slate-800"
+					bind:this={incomesEl}
+					class="grid grid-cols-2 items-end gap-2 border-b border-slate-100 pb-3 sm:flex sm:flex-wrap sm:gap-3 dark:border-slate-800"
 				>
-					<label class="block min-w-0 flex-1 sm:flex-none" title="Monthly net income">
+					<label class="block min-w-0" title="Monthly net income">
 						<span class={fieldLabel}>Monthly net income</span>
 						<NumberInput
 							bind:value={budget.income}
@@ -145,14 +162,9 @@
 						/>
 					</label>
 
-					<span class="flex h-10 shrink-0 items-center text-slate-400">
-						<Plus class="size-5" />
-					</span>
+					{@render plus()}
 
-					<label
-						class="block min-w-0 flex-1 sm:flex-none"
-						title="Holiday + Christmas subsidies paid monthly"
-					>
+					<label class="block min-w-0" title="Holiday + Christmas subsidies paid monthly">
 						<span class={fieldLabel}
 							>Duodécimos<span class="max-sm:hidden">&nbsp;(monthly)</span></span
 						>
@@ -168,6 +180,55 @@
 							data-testid="duodecimos"
 						/>
 					</label>
+
+					{#each budget.extraIncomes as income, i (income.id)}
+						{@render plus()}
+
+						<div class="min-w-0">
+							<div class="flex items-center justify-between gap-1">
+								<label for="income-{income.id}" class="{fieldLabel} min-w-0"
+									>{income.name || "Extra income"}</label
+								>
+								<button
+									type="button"
+									onclick={() => budget.removeExtraIncome(income.id)}
+									class="-mt-1 mb-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/15 dark:hover:text-red-400"
+									title="Remove {income.name || 'this income'}"
+									aria-label="Remove {income.name || 'extra income'}"
+									data-testid="remove-income"
+								>
+									<X class="size-3.5" />
+								</button>
+							</div>
+							<NumberInput
+								bind:value={budget.extraIncomes[i].amount as number}
+								id="income-{income.id}"
+								blankZero
+								step="0.01"
+								placeholder="0"
+								suffix="€"
+								suffixClass="right-3 text-sm font-medium"
+								wrapperClass="w-full sm:w-44"
+								class={mainField}
+								data-testid="extra-income"
+							/>
+						</div>
+					{/each}
+
+					{#if budget.canAddIncome}
+						<button
+							type="button"
+							onclick={addIncome}
+							class="{budget.extraIncomes.length % 2 === 0
+								? 'col-span-2'
+								: ''} inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-dashed border-slate-300 px-3 text-sm whitespace-nowrap text-slate-500 transition hover:border-slate-400 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-200"
+							title="Add another income (up to 2)"
+							data-testid="add-income"
+						>
+							<Plus class="size-4" />
+							Add income
+						</button>
+					{/if}
 				</div>
 
 				<div class="flex flex-wrap gap-2">
@@ -227,9 +288,15 @@
 
 		<hr class="my-6 border-t-2 border-slate-300 dark:border-slate-800" />
 
-		<!-- Duodécimos -->
+		<!-- Duodécimos and extra incomes, side by side -->
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
 			<CategoryCard bind:category={budget.duo} target={budget.target(budget.duo)} />
+			{#each budget.extraIncomes as income, i (income.id)}
+				<CategoryCard
+					bind:category={budget.extraIncomes[i]}
+					target={budget.target(income)}
+				/>
+			{/each}
 		</div>
 	{/if}
 </div>

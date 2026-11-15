@@ -61,20 +61,14 @@
 				class="h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-base font-bold hover:border-slate-200 focus:border-violet-400 focus:ring-0 focus:outline-none dark:hover:border-slate-700"
 			/>
 
-			{#if category.fixed}
-				<div
-					class="flex h-8 shrink-0 items-center pr-2 text-[11px] font-semibold tracking-wide text-slate-400 uppercase"
-				>
-					Fixed
-				</div>
-			{:else}
+			{#if !category.fixed}
 				<NumberInput
 					bind:value={category.percentage}
 					max={100}
 					step="1"
 					suffix="%"
 					suffixClass="text-sm {overAllocated ? 'text-red-500' : ''}"
-					wrapperClass="w-20 shrink-0"
+					wrapperClass="-mr-2 w-20 shrink-0"
 					aria-label="Category percentage"
 					title={overAllocated ? `Total is ${totalPercentage}% (over 100%)` : ""}
 					class="h-8 rounded-md border pr-6 pl-2 text-right text-base font-bold focus:ring-0 focus:outline-none {overAllocated

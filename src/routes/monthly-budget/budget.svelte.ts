@@ -10,8 +10,13 @@ export interface Category {
 	percentage: number;
 	color: string;
 	description: string;
-	/** Fixed categories (duodécimos) use the duodécimos amount as their target instead of a percentage. */
+	/**
+	 * Fixed categories (duodécimos and extra incomes) have a set amount as their target instead
+	 * of a percentage of the main income.
+	 */
 	fixed?: boolean;
+	/** Extra incomes only: the monthly amount, which is also the card's target. */
+	amount?: number;
 	expenses: Expense[];
 }
 
@@ -19,18 +24,27 @@ export interface BudgetData {
 	income: number;
 	duodecimos: number;
 	duo: Category;
+	/** Up to MAX_EXTRA_INCOMES additional incomes, each with its own card. */
+	extraIncomes: Category[];
 	categories: Category[];
 }
 
 export const STORAGE_KEY = "offline-suite:monthly-budget";
-export const EXPORT_VERSION = 3;
+export const EXPORT_VERSION = 4;
+export const MAX_EXTRA_INCOMES = 2;
+
+const EXTRA_INCOME_COLORS = ["#ec4899", "#14b8a6"];
 
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 
-const currency = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
+// Euro sign after the amount (1,250.00€), with English digit grouping.
+const amount = new Intl.NumberFormat("en-IE", {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
 
 export function money(value: number): string {
-	return currency.format(Number(value) || 0);
+	return `${amount.format(Number(value) || 0)}€`;
 }
 
 export function generateId(): string {
@@ -67,6 +81,23 @@ function normalizeDuo(value: unknown): Category {
 	};
 }
 
+function normalizeExtraIncome(value: Record<string, unknown>, index: number): Category {
+	return {
+		id: typeof value.id === "string" && value.id ? value.id : generateId(),
+		name:
+			typeof value.name === "string" && value.name ? value.name : `Extra income ${index + 1}`,
+		percentage: 0,
+		color:
+			typeof value.color === "string" && HEX_COLOR.test(value.color)
+				? value.color
+				: EXTRA_INCOME_COLORS[index % EXTRA_INCOME_COLORS.length],
+		description: "",
+		fixed: true,
+		amount: Math.max(0, Number(value.amount) || 0),
+		expenses: normalizeExpenses(value.expenses)
+	};
+}
+
 function normalizeCategory(value: Record<string, unknown>, index: number): Category {
 	return {
 		id: typeof value.id === "string" && value.id ? value.id : generateId(),
@@ -88,6 +119,10 @@ export function parseBudget(value: unknown): BudgetData | null {
 		income: Math.max(0, Number(value.income) || 0),
 		duodecimos: Math.max(0, Number(value.duodecimos) || 0),
 		duo: normalizeDuo(value.duo),
+		extraIncomes: (Array.isArray(value.extraIncomes) ? value.extraIncomes : [])
+			.filter(isRecord)
+			.slice(0, MAX_EXTRA_INCOMES)
+			.map(normalizeExtraIncome),
 		categories: value.categories.filter(isRecord).map(normalizeCategory)
 	};
 }
@@ -97,6 +132,7 @@ export function defaultBudget(): BudgetData {
 		income: 2500,
 		duodecimos: 0,
 		duo: normalizeDuo(undefined),
+		extraIncomes: [],
 		categories: [
 			{
 				id: "needs",
@@ -136,8 +172,11 @@ export class Budget {
 	duodecimos = $state(0);
 	categories = $state<Category[]>([]);
 	duo = $state<Category>(normalizeDuo(undefined));
+	extraIncomes = $state<Category[]>([]);
 
-	all = $derived([...this.categories, this.duo]);
+	all = $derived([...this.categories, this.duo, ...this.extraIncomes]);
+
+	canAddIncome = $derived(this.extraIncomes.length < MAX_EXTRA_INCOMES);
 
 	totalPercentage = $derived(
 		this.categories.reduce((total, category) => total + (Number(category.percentage) || 0), 0)
@@ -145,7 +184,11 @@ export class Budget {
 
 	overAllocated = $derived(this.totalPercentage > 100);
 
-	totalBudget = $derived(this.income + this.duodecimos);
+	totalBudget = $derived(
+		this.income +
+			this.duodecimos +
+			this.extraIncomes.reduce((total, income) => total + (Number(income.amount) || 0), 0)
+	);
 
 	totalTracked = $derived(
 		this.all.reduce((total, category) => total + categorySpent(category), 0)
@@ -160,10 +203,34 @@ export class Budget {
 		this.duodecimos = data.duodecimos;
 		this.categories = data.categories;
 		this.duo = data.duo;
+		this.extraIncomes = data.extraIncomes;
+	}
+
+	/** Adds an extra income, reusing the lowest free number and colour. Returns it, or null at the limit. */
+	addExtraIncome(): Category | null {
+		if (!this.canAddIncome) return null;
+		const names = this.extraIncomes.map((income) => income.name);
+		const colors = this.extraIncomes.map((income) => income.color);
+		let n = 1;
+		while (names.includes(`Extra income ${n}`)) n++;
+		this.extraIncomes.push(
+			normalizeExtraIncome(
+				{
+					name: `Extra income ${n}`,
+					color: EXTRA_INCOME_COLORS.find((color) => !colors.includes(color))
+				},
+				n - 1
+			)
+		);
+		return this.extraIncomes[this.extraIncomes.length - 1];
+	}
+
+	removeExtraIncome(id: string) {
+		this.extraIncomes = this.extraIncomes.filter((income) => income.id !== id);
 	}
 
 	target(category: Category): number {
-		if (category.fixed) return this.duodecimos;
+		if (category.fixed) return category.amount ?? this.duodecimos;
 		return (this.income * (Number(category.percentage) || 0)) / 100;
 	}
 
@@ -172,6 +239,7 @@ export class Budget {
 			income: this.income,
 			duodecimos: this.duodecimos,
 			duo: this.duo,
+			extraIncomes: this.extraIncomes,
 			categories: this.categories
 		});
 	}

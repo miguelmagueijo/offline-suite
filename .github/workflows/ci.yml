@@ -1,0 +1,51 @@
+name: CI
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+    # Reused by production.yml before deploying.
+    workflow_call:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.event.pull_request.number || github.sha }}
+    # A new push to a PR cancels the outdated run; runs on main always finish.
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    verify:
+        name: Lint, check & e2e
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 10.28.2
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm lint
+            - run: pnpm check
+            - run: pnpm exec playwright install --with-deps chromium
+            # Playwright's webServer runs the production build before testing.
+            - run: pnpm exec playwright test
+            - name: Upload Playwright report
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report
+                  path: |
+                      playwright-report/
+                      test-results/
+                  retention-days: 7
+
+    docker:
+        name: Docker build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - run: docker build -t offline-suite:ci .

@@ -13,7 +13,7 @@ test.describe("calculator", () => {
 		await page.getByTestId("calc-net").fill("100");
 		await calc(page).getByRole("button", { name: "Calculate" }).click();
 		await expect(page.getByTestId("calc-gross")).toHaveValue("123");
-		await expect(page.getByTestId("calc-amount")).toHaveValue("€23.00");
+		await expect(page.getByTestId("calc-amount")).toHaveValue("23.00€");
 	});
 
 	test("computes price without VAT from price with VAT", async ({ page }) => {
@@ -21,7 +21,7 @@ test.describe("calculator", () => {
 		await page.getByTestId("calc-gross").fill("10.60");
 		await page.getByTestId("calc-gross").press("Enter");
 		await expect(page.getByTestId("calc-net")).toHaveValue("10");
-		await expect(page.getByTestId("calc-amount")).toHaveValue("€0.60");
+		await expect(page.getByTestId("calc-amount")).toHaveValue("0.60€");
 	});
 
 	test("empty VAT falls back to 23%", async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe("calculator", () => {
 		await page.getByTestId("calc-gross").fill("246");
 		await calc(page).getByRole("button", { name: "Calculate" }).click();
 		await expect(page.getByTestId("calc-net")).toHaveValue("200");
-		await expect(page.getByTestId("calc-amount")).toHaveValue("€46.00");
+		await expect(page.getByTestId("calc-amount")).toHaveValue("46.00€");
 	});
 
 	test("shows an error without any price", async ({ page }) => {
@@ -70,14 +70,14 @@ test.describe("mini cart", () => {
 
 		await expect(rows.nth(0)).toHaveAttribute("data-status", "valid");
 		await expect(rows.nth(0).getByLabel("Price without VAT")).toHaveValue("20");
-		await expect(rows.nth(0).getByTestId("row-amount")).toHaveText("€1.20");
+		await expect(rows.nth(0).getByTestId("row-amount")).toHaveText("1.20€");
 		await expect(rows.nth(1).getByLabel("Price with VAT")).toHaveValue("1230");
 		await expect(rows.nth(2)).toHaveAttribute("data-status", "invalid");
 		await expect(page.getByTestId("cart-invalid")).toContainText("1 row was skipped");
 
-		await expect(page.getByTestId("total-gross")).toHaveText("€1,251.20");
-		await expect(page.getByTestId("total-net")).toHaveText("€1,020.00");
-		await expect(page.getByTestId("total-amount")).toHaveText("€231.20");
+		await expect(page.getByTestId("total-gross")).toHaveText("1,251.20€");
+		await expect(page.getByTestId("total-net")).toHaveText("1,020.00€");
+		await expect(page.getByTestId("total-amount")).toHaveText("231.20€");
 		await expect(page.getByTestId("cart-totals")).not.toContainText("%");
 		await expect(page.getByTestId("cart-head").locator("span").nth(1)).toHaveText("VAT (%)");
 
@@ -88,7 +88,7 @@ test.describe("mini cart", () => {
 
 		await cart(page).getByRole("button", { name: "Calculate" }).click();
 		await expect(page.getByTestId("cart-invalid")).toHaveCount(0);
-		await expect(page.getByTestId("total-gross")).toHaveText("€1,263.50");
+		await expect(page.getByTestId("total-gross")).toHaveText("1,263.50€");
 
 		await rows.nth(1).getByRole("button", { name: "Remove item" }).click();
 		await expect(rows).toHaveCount(2);

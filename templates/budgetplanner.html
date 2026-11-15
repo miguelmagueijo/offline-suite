@@ -1,481 +1,527 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Budget Planner</title>
-
-  <script>
-    (function () {
-      var mode = "auto";
-      try { mode = localStorage.getItem("budget-theme") || "auto"; } catch (e) {}
-      var dark = mode === "dark" || (mode === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-      document.documentElement.classList.toggle("dark", dark);
-    })();
-  </script>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            income: "#2563eb"
-          }
-        }
-      }
-    };
-  </script>
-
-  <style>
-    #income::-webkit-outer-spin-button, #income::-webkit-inner-spin-button,
-    #duodecimos::-webkit-outer-spin-button, #duodecimos::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    #income, #duodecimos { -moz-appearance: textfield; appearance: textfield; }
-
-    .expense-amount::-webkit-outer-spin-button,
-    .expense-amount::-webkit-inner-spin-button,
-    .category-percentage-input::-webkit-outer-spin-button,
-    .category-percentage-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    .expense-amount,
-    .category-percentage-input {
-      -moz-appearance: textfield;
-      appearance: textfield;
-    }
-
-    html { color-scheme: light; }
-    html.dark { color-scheme: dark; }
-
-      html.dark body { background: #0b1220; color: #e2e8f0; }
-      html.dark .bg-slate-100 { background-color: #0b1220; }
-      html.dark .bg-white { background-color: #111a2c; }
-      html.dark .bg-slate-800 { background-color: #e2e8f0; color: #0f172a; }
-      html.dark .hover\:bg-slate-700:hover { background-color: #cbd5e1; }
-      html.dark .hover\:bg-slate-50:hover { background-color: #1a2740; }
-      html.dark .hover\:bg-red-50:hover { background-color: #3b1219; }
-      html.dark .bg-red-50 { background-color: #3b1219; }
-      html.dark .bg-slate-100.rounded-full { background-color: #1e293b; }
-      html.dark .text-slate-800, html.dark .text-slate-900 { color: #f1f5f9; }
-      html.dark .text-slate-700 { color: #cbd5e1; }
-      html.dark .text-slate-600 { color: #b6c2d3; }
-      html.dark .text-slate-500 { color: #94a3b8; }
-      html.dark .text-slate-400 { color: #7a8aa3; }
-      html.dark .text-red-600, html.dark .text-red-500, html.dark .hover\:text-red-600:hover { color: #f87171; }
-      html.dark .border-slate-100, html.dark .border-slate-200, html.dark .hover\:border-slate-200:hover { border-color: #1f2c44; }
-      html.dark .border-slate-300 { border-color: #2a3a57; }
-      html.dark .border-red-200, html.dark .border-red-300 { border-color: #7f1d1d; }
-      html.dark .\!border-red-400 { border-color: #f87171 !important; }
-      html.dark input, html.dark button { color-scheme: dark; }
-      html.dark input[type="text"], html.dark input[type="number"] { background-color: transparent; color: #f1f5f9; }
-      html.dark .expense-name, html.dark .expense-amount, html.dark #income, html.dark #duodecimos { background-color: #0b1220; }
-      html.dark .field-main { background-color: #0b1220; color: #f1f5f9; border-color: #2a3a57; }
-      html.dark .field-main:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,.3); }
-      html.dark input::placeholder { color: #566681; }
-      html.dark .border-dashed { border-color: #2a3a57; }
-
-    input[type="color"] {
-      appearance: none;
-      -webkit-appearance: none;
-      padding: 0;
-      border: 0;
-      background: transparent;
-    }
-
-    input[type="color"]::-webkit-color-swatch-wrapper {
-      padding: 0;
-    }
-
-    input[type="color"]::-webkit-color-swatch {
-      border: 0;
-      border-radius: 9999px;
-    }
-  </style>
-</head>
-
-<body class="min-h-screen bg-slate-100 text-slate-800">
-
-<div class="max-w-7xl mx-auto px-4 py-6">
-
-  <!-- Header -->
-  <header class="mb-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">
-          Budget Planner
-        </h1>
-        <p class="mt-0.5 text-sm text-slate-500">
-          Customize your budget percentages and track where every euro goes.
-        </p>
-      </div>
-
-      <div class="flex gap-2">
-        <button
-          id="themeBtn"
-          type="button"
-          class="h-8 px-3 text-sm rounded-md bg-white border border-slate-300 hover:bg-slate-50 transition"
-          title="Theme: click to change"
-        >
-          🌓 Auto
-        </button>
-
-        <button
-          id="exportBtn"
-          class="h-8 px-3 text-sm rounded-md bg-slate-800 border border-transparent text-white hover:bg-slate-700 transition"
-        >
-          Export JSON
-        </button>
-
-        <label
-          class="h-8 px-3 inline-flex items-center text-sm rounded-md bg-white border border-slate-300 hover:bg-slate-50 cursor-pointer transition"
-        >
-          Import JSON
-          <input
-            id="importInput"
-            type="file"
-            accept=".json,application/json"
-            class="hidden"
-          />
-        </label>
-      </div>
-    </div>
-  </header>
-
-
-  <!-- OVERVIEW -->
-  <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
-
-    <div class="flex flex-col gap-3">
-
-      <div class="flex flex-wrap items-end gap-3 pb-3 border-b border-slate-100">
-        <label class="block" title="Monthly net income">
-          <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Monthly net income</span>
-          <span class="relative block w-44">
-            <input id="income" type="number" min="0" step="0.01" placeholder="2500"
-              class="field-main w-full h-10 text-lg font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded-md pl-3 pr-8 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">€</span>
-          </span>
-        </label>
-        <span class="h-10 flex items-center text-lg font-bold text-slate-400">+</span>
-        <label class="block" title="Holiday + Christmas subsidies paid monthly">
-          <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Duodécimos (monthly)</span>
-          <span class="relative block w-44">
-            <input id="duodecimos" type="number" min="0" step="0.01" placeholder="0"
-              class="field-main w-full h-10 text-lg font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded-md pl-3 pr-8 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200" />
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">€</span>
-          </span>
-        </label>
-      </div>
-
-      <div id="overviewCategories" class="flex flex-wrap gap-2"></div>
-
-      <div>
-        <div class="flex justify-between text-xs text-slate-500 mb-1.5">
-          <span id="totalTracked" class="font-medium text-slate-700">€0.00 tracked</span>
-          <span><span id="totalUnallocated">€0.00 unallocated</span> · <span id="overallPercentage">0%</span></span>
-        </div>
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div id="overallProgress" class="h-full bg-blue-600 rounded-full transition-all"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <div id="percentWarning" class="hidden mt-3 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-1.5"></div>
-
-  </section>
-
-
-  <!-- BUDGET -->
-  <div>
-
-    <main id="categories" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></main>
-
-  </div>
-
-
-  <hr class="my-6 border-t-2 border-slate-300" />
-
-
-  <!-- DUODÉCIMOS -->
-  <div>
-
-    <main id="duoCategory" class="grid grid-cols-1 lg:grid-cols-3 gap-4"></main>
-
-  </div>
-
-
-  <footer class="text-center text-xs text-slate-400 mt-6">
-    Budget Planner
-  </footer>
-
-</div>
-
-
-<script>
-
-const STORAGE_KEY = "custom-budget-planner";
-
-const DEFAULT_STATE = {
-  income: 2500,
-
-  duodecimos: 0,
-
-  categories: [
-    {
-      id: "needs",
-      name: "Needs",
-      percentage: 50,
-      color: "#16a34a",
-      description: "Housing, utilities, food and essential costs.",
-      expenses: []
-    },
-
-    {
-      id: "wants",
-      name: "Wants",
-      percentage: 30,
-      color: "#f59e0b",
-      description: "Entertainment, restaurants, shopping and hobbies.",
-      expenses: []
-    },
-
-    {
-      id: "savings",
-      name: "Savings",
-      percentage: 20,
-      color: "#8b5cf6",
-      description: "Savings, investments and debt repayment.",
-      expenses: []
-    }
-  ]
-};
-
-
-let state = loadState();
-
-
-const currency = new Intl.NumberFormat("en-IE", {
-  style: "currency",
-  currency: "EUR"
-});
-
-
-function money(value) {
-  return currency.format(Number(value) || 0);
-}
-
-
-function generateId() {
-  if (crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-
-  return Date.now() + "-" + Math.random();
-}
-
-
-function normalizeDuo(src) {
-  src = src && typeof src === "object" ? src : {};
-  return {
-    id: "duodecimos",
-    name: src.name || "Duodécimos",
-    percentage: 0,
-    color: /^#[0-9A-Fa-f]{6}$/.test(src.color || "") ? src.color : "#0ea5e9",
-    description: "",
-    fixed: true,
-    expenses: Array.isArray(src.expenses) ? src.expenses : []
-  };
-}
-
-
-function allCategories() {
-  return [...state.categories, state.duo];
-}
-
-
-function cloneDefaultState() {
-  const d = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  d.duo = normalizeDuo();
-  return d;
-}
-
-
-function loadState() {
-
-  const saved = localStorage.getItem(STORAGE_KEY);
-
-  if (!saved) {
-    return cloneDefaultState();
-  }
-
-  try {
-
-    const parsed = JSON.parse(saved);
-
-    if (
-      !parsed ||
-      typeof parsed !== "object" ||
-      !Array.isArray(parsed.categories)
-    ) {
-      return cloneDefaultState();
-    }
-
-    return {
-      income: Number(parsed.income) || 0,
-
-      duodecimos: Math.max(0, Number(parsed.duodecimos) || 0),
-
-      duo: normalizeDuo(parsed.duo),
-
-      categories: parsed.categories.map((category, index) => ({
-        id: category.id || generateId(),
-        name: category.name || `Category ${index + 1}`,
-        percentage: Number(category.percentage) || 0,
-        color: category.color || "#64748b",
-        description: category.description || "",
-        expenses: Array.isArray(category.expenses)
-          ? category.expenses
-          : []
-      }))
-    };
-
-  } catch {
-
-    return cloneDefaultState();
-
-  }
-}
-
-
-function saveState() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(state)
-  );
-}
-
-
-function totalPercentage() {
-
-  return state.categories.reduce(
-    (total, category) =>
-      total + Number(category.percentage || 0),
-    0
-  );
-
-}
-
-
-function totalBudget() {
-  return state.income + state.duodecimos;
-}
-
-
-function totalTracked() {
-
-  return allCategories().reduce(
-    (total, category) => {
-
-      return total + category.expenses.reduce(
-        (sum, expense) =>
-          sum + (Number(expense.amount) || 0),
-        0
-      );
-
-    },
-    0
-  );
-
-}
-
-
-function categorySpent(category) {
-
-  return category.expenses.reduce(
-    (sum, expense) =>
-      sum + (Number(expense.amount) || 0),
-    0
-  );
-
-}
-
-
-function categoryTarget(category) {
-
-  if (category.fixed) {
-    return state.duodecimos;
-  }
-
-  return state.income *
-    (Number(category.percentage) || 0) /
-    100;
-
-}
-
-
-function escapeHtml(value) {
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
-
-
-function render() {
-
-  document.getElementById("income").value =
-    state.income || "";
-
-  document.getElementById("duodecimos").value =
-    state.duodecimos || "";
-
-  renderCategories();
-
-  renderOverview();
-
-  applyPercentageWarning();
-
-  saveState();
-
-}
-
-
-function renderCategories() {
-
-  const mainContainer =
-    document.getElementById("categories");
-
-  const duoContainer =
-    document.getElementById("duoCategory");
-
-  mainContainer.innerHTML = "";
-
-  duoContainer.innerHTML = "";
-
-  allCategories().forEach(category => {
-
-    const container =
-      category.fixed ? duoContainer : mainContainer;
-
-    const section =
-      document.createElement("section");
-
-    section.className =
-      "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
-
-    section.dataset.categoryId =
-      category.id;
-
-    section.innerHTML = `
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<title>Budget Planner</title>
+
+		<script>
+			(function () {
+				var mode = "auto";
+				try {
+					mode = localStorage.getItem("budget-theme") || "auto";
+				} catch (e) {}
+				var dark =
+					mode === "dark" ||
+					(mode === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+				document.documentElement.classList.toggle("dark", dark);
+			})();
+		</script>
+
+		<script src="https://cdn.tailwindcss.com"></script>
+
+		<script>
+			tailwind.config = {
+				theme: {
+					extend: {
+						colors: {
+							income: "#2563eb"
+						}
+					}
+				}
+			};
+		</script>
+
+		<style>
+			#income::-webkit-outer-spin-button,
+			#income::-webkit-inner-spin-button,
+			#duodecimos::-webkit-outer-spin-button,
+			#duodecimos::-webkit-inner-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+			#income,
+			#duodecimos {
+				-moz-appearance: textfield;
+				appearance: textfield;
+			}
+
+			.expense-amount::-webkit-outer-spin-button,
+			.expense-amount::-webkit-inner-spin-button,
+			.category-percentage-input::-webkit-outer-spin-button,
+			.category-percentage-input::-webkit-inner-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+
+			.expense-amount,
+			.category-percentage-input {
+				-moz-appearance: textfield;
+				appearance: textfield;
+			}
+
+			html {
+				color-scheme: light;
+			}
+			html.dark {
+				color-scheme: dark;
+			}
+
+			html.dark body {
+				background: #0b1220;
+				color: #e2e8f0;
+			}
+			html.dark .bg-slate-100 {
+				background-color: #0b1220;
+			}
+			html.dark .bg-white {
+				background-color: #111a2c;
+			}
+			html.dark .bg-slate-800 {
+				background-color: #e2e8f0;
+				color: #0f172a;
+			}
+			html.dark .hover\:bg-slate-700:hover {
+				background-color: #cbd5e1;
+			}
+			html.dark .hover\:bg-slate-50:hover {
+				background-color: #1a2740;
+			}
+			html.dark .hover\:bg-red-50:hover {
+				background-color: #3b1219;
+			}
+			html.dark .bg-red-50 {
+				background-color: #3b1219;
+			}
+			html.dark .bg-slate-100.rounded-full {
+				background-color: #1e293b;
+			}
+			html.dark .text-slate-800,
+			html.dark .text-slate-900 {
+				color: #f1f5f9;
+			}
+			html.dark .text-slate-700 {
+				color: #cbd5e1;
+			}
+			html.dark .text-slate-600 {
+				color: #b6c2d3;
+			}
+			html.dark .text-slate-500 {
+				color: #94a3b8;
+			}
+			html.dark .text-slate-400 {
+				color: #7a8aa3;
+			}
+			html.dark .text-red-600,
+			html.dark .text-red-500,
+			html.dark .hover\:text-red-600:hover {
+				color: #f87171;
+			}
+			html.dark .border-slate-100,
+			html.dark .border-slate-200,
+			html.dark .hover\:border-slate-200:hover {
+				border-color: #1f2c44;
+			}
+			html.dark .border-slate-300 {
+				border-color: #2a3a57;
+			}
+			html.dark .border-red-200,
+			html.dark .border-red-300 {
+				border-color: #7f1d1d;
+			}
+			html.dark .\!border-red-400 {
+				border-color: #f87171 !important;
+			}
+			html.dark input,
+			html.dark button {
+				color-scheme: dark;
+			}
+			html.dark input[type="text"],
+			html.dark input[type="number"] {
+				background-color: transparent;
+				color: #f1f5f9;
+			}
+			html.dark .expense-name,
+			html.dark .expense-amount,
+			html.dark #income,
+			html.dark #duodecimos {
+				background-color: #0b1220;
+			}
+			html.dark .field-main {
+				background-color: #0b1220;
+				color: #f1f5f9;
+				border-color: #2a3a57;
+			}
+			html.dark .field-main:focus {
+				border-color: #60a5fa;
+				box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+			}
+			html.dark input::placeholder {
+				color: #566681;
+			}
+			html.dark .border-dashed {
+				border-color: #2a3a57;
+			}
+
+			input[type="color"] {
+				appearance: none;
+				-webkit-appearance: none;
+				padding: 0;
+				border: 0;
+				background: transparent;
+			}
+
+			input[type="color"]::-webkit-color-swatch-wrapper {
+				padding: 0;
+			}
+
+			input[type="color"]::-webkit-color-swatch {
+				border: 0;
+				border-radius: 9999px;
+			}
+		</style>
+	</head>
+
+	<body class="min-h-screen bg-slate-100 text-slate-800">
+		<div class="mx-auto max-w-7xl px-4 py-6">
+			<!-- Header -->
+			<header class="mb-4">
+				<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+					<div>
+						<h1 class="text-2xl font-bold tracking-tight">Budget Planner</h1>
+						<p class="mt-0.5 text-sm text-slate-500">
+							Customize your budget percentages and track where every euro goes.
+						</p>
+					</div>
+
+					<div class="flex gap-2">
+						<button
+							id="themeBtn"
+							type="button"
+							class="h-8 rounded-md border border-slate-300 bg-white px-3 text-sm transition hover:bg-slate-50"
+							title="Theme: click to change"
+						>
+							🌓 Auto
+						</button>
+
+						<button
+							id="exportBtn"
+							class="h-8 rounded-md border border-transparent bg-slate-800 px-3 text-sm text-white transition hover:bg-slate-700"
+						>
+							Export JSON
+						</button>
+
+						<label
+							class="inline-flex h-8 cursor-pointer items-center rounded-md border border-slate-300 bg-white px-3 text-sm transition hover:bg-slate-50"
+						>
+							Import JSON
+							<input
+								id="importInput"
+								type="file"
+								accept=".json,application/json"
+								class="hidden"
+							/>
+						</label>
+					</div>
+				</div>
+			</header>
+
+			<!-- OVERVIEW -->
+			<section class="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+				<div class="flex flex-col gap-3">
+					<div class="flex flex-wrap items-end gap-3 border-b border-slate-100 pb-3">
+						<label class="block" title="Monthly net income">
+							<span
+								class="mb-1 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase"
+								>Monthly net income</span
+							>
+							<span class="relative block w-44">
+								<input
+									id="income"
+									type="number"
+									min="0"
+									step="0.01"
+									placeholder="2500"
+									class="field-main h-10 w-full rounded-md border border-slate-300 bg-slate-50 pr-8 pl-3 text-lg font-bold text-slate-800 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none"
+								/>
+								<span
+									class="absolute top-1/2 right-3 -translate-y-1/2 text-sm font-medium text-slate-400"
+									>€</span
+								>
+							</span>
+						</label>
+						<span class="flex h-10 items-center text-lg font-bold text-slate-400"
+							>+</span
+						>
+						<label class="block" title="Holiday + Christmas subsidies paid monthly">
+							<span
+								class="mb-1 block text-[11px] font-semibold tracking-wide text-slate-500 uppercase"
+								>Duodécimos (monthly)</span
+							>
+							<span class="relative block w-44">
+								<input
+									id="duodecimos"
+									type="number"
+									min="0"
+									step="0.01"
+									placeholder="0"
+									class="field-main h-10 w-full rounded-md border border-slate-300 bg-slate-50 pr-8 pl-3 text-lg font-bold text-slate-800 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none"
+								/>
+								<span
+									class="absolute top-1/2 right-3 -translate-y-1/2 text-sm font-medium text-slate-400"
+									>€</span
+								>
+							</span>
+						</label>
+					</div>
+
+					<div id="overviewCategories" class="flex flex-wrap gap-2"></div>
+
+					<div>
+						<div class="mb-1.5 flex justify-between text-xs text-slate-500">
+							<span id="totalTracked" class="font-medium text-slate-700"
+								>€0.00 tracked</span
+							>
+							<span
+								><span id="totalUnallocated">€0.00 unallocated</span> ·
+								<span id="overallPercentage">0%</span></span
+							>
+						</div>
+						<div class="h-2 overflow-hidden rounded-full bg-slate-100">
+							<div
+								id="overallProgress"
+								class="h-full rounded-full bg-blue-600 transition-all"
+							></div>
+						</div>
+					</div>
+				</div>
+
+				<div
+					id="percentWarning"
+					class="mt-3 hidden rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600"
+				></div>
+			</section>
+
+			<!-- BUDGET -->
+			<div>
+				<main id="categories" class="grid grid-cols-1 gap-4 lg:grid-cols-3"></main>
+			</div>
+
+			<hr class="my-6 border-t-2 border-slate-300" />
+
+			<!-- DUODÉCIMOS -->
+			<div>
+				<main id="duoCategory" class="grid grid-cols-1 gap-4 lg:grid-cols-3"></main>
+			</div>
+
+			<footer class="mt-6 text-center text-xs text-slate-400">Budget Planner</footer>
+		</div>
+
+		<script>
+			const STORAGE_KEY = "custom-budget-planner";
+
+			const DEFAULT_STATE = {
+				income: 2500,
+
+				duodecimos: 0,
+
+				categories: [
+					{
+						id: "needs",
+						name: "Needs",
+						percentage: 50,
+						color: "#16a34a",
+						description: "Housing, utilities, food and essential costs.",
+						expenses: []
+					},
+
+					{
+						id: "wants",
+						name: "Wants",
+						percentage: 30,
+						color: "#f59e0b",
+						description: "Entertainment, restaurants, shopping and hobbies.",
+						expenses: []
+					},
+
+					{
+						id: "savings",
+						name: "Savings",
+						percentage: 20,
+						color: "#8b5cf6",
+						description: "Savings, investments and debt repayment.",
+						expenses: []
+					}
+				]
+			};
+
+			let state = loadState();
+
+			const currency = new Intl.NumberFormat("en-IE", {
+				style: "currency",
+				currency: "EUR"
+			});
+
+			function money(value) {
+				return currency.format(Number(value) || 0);
+			}
+
+			function generateId() {
+				if (crypto.randomUUID) {
+					return crypto.randomUUID();
+				}
+
+				return Date.now() + "-" + Math.random();
+			}
+
+			function normalizeDuo(src) {
+				src = src && typeof src === "object" ? src : {};
+				return {
+					id: "duodecimos",
+					name: src.name || "Duodécimos",
+					percentage: 0,
+					color: /^#[0-9A-Fa-f]{6}$/.test(src.color || "") ? src.color : "#0ea5e9",
+					description: "",
+					fixed: true,
+					expenses: Array.isArray(src.expenses) ? src.expenses : []
+				};
+			}
+
+			function allCategories() {
+				return [...state.categories, state.duo];
+			}
+
+			function cloneDefaultState() {
+				const d = JSON.parse(JSON.stringify(DEFAULT_STATE));
+				d.duo = normalizeDuo();
+				return d;
+			}
+
+			function loadState() {
+				const saved = localStorage.getItem(STORAGE_KEY);
+
+				if (!saved) {
+					return cloneDefaultState();
+				}
+
+				try {
+					const parsed = JSON.parse(saved);
+
+					if (
+						!parsed ||
+						typeof parsed !== "object" ||
+						!Array.isArray(parsed.categories)
+					) {
+						return cloneDefaultState();
+					}
+
+					return {
+						income: Number(parsed.income) || 0,
+
+						duodecimos: Math.max(0, Number(parsed.duodecimos) || 0),
+
+						duo: normalizeDuo(parsed.duo),
+
+						categories: parsed.categories.map((category, index) => ({
+							id: category.id || generateId(),
+							name: category.name || `Category ${index + 1}`,
+							percentage: Number(category.percentage) || 0,
+							color: category.color || "#64748b",
+							description: category.description || "",
+							expenses: Array.isArray(category.expenses) ? category.expenses : []
+						}))
+					};
+				} catch {
+					return cloneDefaultState();
+				}
+			}
+
+			function saveState() {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+			}
+
+			function totalPercentage() {
+				return state.categories.reduce(
+					(total, category) => total + Number(category.percentage || 0),
+					0
+				);
+			}
+
+			function totalBudget() {
+				return state.income + state.duodecimos;
+			}
+
+			function totalTracked() {
+				return allCategories().reduce((total, category) => {
+					return (
+						total +
+						category.expenses.reduce(
+							(sum, expense) => sum + (Number(expense.amount) || 0),
+							0
+						)
+					);
+				}, 0);
+			}
+
+			function categorySpent(category) {
+				return category.expenses.reduce(
+					(sum, expense) => sum + (Number(expense.amount) || 0),
+					0
+				);
+			}
+
+			function categoryTarget(category) {
+				if (category.fixed) {
+					return state.duodecimos;
+				}
+
+				return (state.income * (Number(category.percentage) || 0)) / 100;
+			}
+
+			function escapeHtml(value) {
+				return String(value)
+					.replaceAll("&", "&amp;")
+					.replaceAll("<", "&lt;")
+					.replaceAll(">", "&gt;")
+					.replaceAll('"', "&quot;")
+					.replaceAll("'", "&#039;");
+			}
+
+			function render() {
+				document.getElementById("income").value = state.income || "";
+
+				document.getElementById("duodecimos").value = state.duodecimos || "";
+
+				renderCategories();
+
+				renderOverview();
+
+				applyPercentageWarning();
+
+				saveState();
+			}
+
+			function renderCategories() {
+				const mainContainer = document.getElementById("categories");
+
+				const duoContainer = document.getElementById("duoCategory");
+
+				mainContainer.innerHTML = "";
+
+				duoContainer.innerHTML = "";
+
+				allCategories().forEach((category) => {
+					const container = category.fixed ? duoContainer : mainContainer;
+
+					const section = document.createElement("section");
+
+					section.className =
+						"bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden";
+
+					section.dataset.categoryId = category.id;
+
+					section.innerHTML = `
 
       <!-- Category header -->
 
@@ -497,7 +543,10 @@ function renderCategories() {
             value="${escapeHtml(category.name)}"
           />
 
-          ${category.fixed ? `<div class="shrink-0 h-8 flex items-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide pr-2">Fixed</div>` : `<div class="relative w-20 shrink-0">
+          ${
+				category.fixed
+					? `<div class="shrink-0 h-8 flex items-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide pr-2">Fixed</div>`
+					: `<div class="relative w-20 shrink-0">
             <input
               type="number"
               min="0"
@@ -507,7 +556,8 @@ function renderCategories() {
               value="${Number(category.percentage)}"
             />
             <span class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
-          </div>`}
+          </div>`
+			}
 
         </div>
 
@@ -577,160 +627,89 @@ function renderCategories() {
 
     `;
 
+					container.appendChild(section);
 
-    container.appendChild(section);
+					setupCategoryEvents(section, category);
 
-    setupCategoryEvents(
-      section,
-      category
-    );
+					renderExpenses(section, category);
 
-    renderExpenses(
-      section,
-      category
-    );
+					updateCategoryVisuals(section, category);
+				});
+			}
 
-    updateCategoryVisuals(
-      section,
-      category
-    );
+			function setupCategoryEvents(section, category) {
+				const nameInput = section.querySelector(".category-name");
 
-  });
+				const percentageInput = section.querySelector(".category-percentage-input");
 
-}
+				const colorInput = section.querySelector(".category-color");
 
+				const addButton = section.querySelector(".add-expense");
 
-function setupCategoryEvents(
-  section,
-  category
-) {
+				nameInput.addEventListener("input", () => {
+					category.name = nameInput.value;
 
-  const nameInput =
-    section.querySelector(".category-name");
+					update();
+				});
 
-  const percentageInput =
-    section.querySelector(
-      ".category-percentage-input"
-    );
+				if (percentageInput) {
+					percentageInput.addEventListener("input", () => {
+						let value = Number(percentageInput.value);
 
-  const colorInput =
-    section.querySelector(".category-color");
+						if (!Number.isFinite(value)) {
+							value = 0;
+						}
 
-  const addButton =
-    section.querySelector(".add-expense");
+						value = Math.max(0, Math.min(100, value));
 
+						category.percentage = value;
 
-  nameInput.addEventListener(
-    "input",
-    () => {
+						percentageInput.value = value;
 
-      category.name =
-        nameInput.value;
+						update();
+					});
+				}
 
-      update();
+				colorInput.addEventListener("input", () => {
+					category.color = colorInput.value;
 
-    }
-  );
+					update();
+				});
 
+				addButton.addEventListener("click", () => {
+					category.expenses.push({
+						id: generateId(),
+						name: "",
+						amount: 0
+					});
 
-  if (percentageInput) {
+					saveState();
 
-  percentageInput.addEventListener(
-    "input",
-    () => {
+					render();
 
-      let value =
-        Number(percentageInput.value);
+					const newSection = document.querySelector(
+						`[data-category-id="${CSS.escape(category.id)}"]`
+					);
 
-      if (!Number.isFinite(value)) {
-        value = 0;
-      }
+					const inputs = newSection.querySelectorAll(".expense-name");
 
-      value =
-        Math.max(0, Math.min(100, value));
+					if (inputs.length) {
+						inputs[inputs.length - 1].focus();
+					}
+				});
+			}
 
-      category.percentage =
-        value;
+			function renderExpenses(section, category) {
+				const container = section.querySelector(".expenses");
 
-      percentageInput.value =
-        value;
+				container.innerHTML = "";
 
-      update();
+				category.expenses.forEach((expense) => {
+					const row = document.createElement("div");
 
-    }
-  );
+					row.className = "expense-row flex gap-2 items-center";
 
-  }
-
-
-  colorInput.addEventListener(
-    "input",
-    () => {
-
-      category.color =
-        colorInput.value;
-
-      update();
-
-    }
-  );
-
-
-  addButton.addEventListener(
-    "click",
-    () => {
-
-      category.expenses.push({
-        id: generateId(),
-        name: "",
-        amount: 0
-      });
-
-      saveState();
-
-      render();
-
-      const newSection =
-        document.querySelector(
-          `[data-category-id="${CSS.escape(category.id)}"]`
-        );
-
-      const inputs =
-        newSection.querySelectorAll(
-          ".expense-name"
-        );
-
-      if (inputs.length) {
-        inputs[inputs.length - 1].focus();
-      }
-
-    }
-  );
-
-}
-
-
-function renderExpenses(
-  section,
-  category
-) {
-
-  const container =
-    section.querySelector(".expenses");
-
-  container.innerHTML = "";
-
-
-  category.expenses.forEach(
-    expense => {
-
-      const row =
-        document.createElement("div");
-
-      row.className =
-        "expense-row flex gap-2 items-center";
-
-      row.innerHTML = `
+					row.innerHTML = `
 
         <input
           type="text"
@@ -773,562 +752,312 @@ function renderExpenses(
 
       `;
 
+					const nameInput = row.querySelector(".expense-name");
 
-      const nameInput =
-        row.querySelector(".expense-name");
+					const amountInput = row.querySelector(".expense-amount");
 
-      const amountInput =
-        row.querySelector(".expense-amount");
+					const deleteButton = row.querySelector(".delete-expense");
 
-      const deleteButton =
-        row.querySelector(".delete-expense");
+					nameInput.addEventListener("input", () => {
+						expense.name = nameInput.value;
 
+						saveState();
+					});
 
-      nameInput.addEventListener(
-        "input",
-        () => {
+					amountInput.addEventListener("input", () => {
+						expense.amount = Math.max(0, Number(amountInput.value) || 0);
 
-          expense.name =
-            nameInput.value;
+						update();
+					});
 
-          saveState();
+					deleteButton.addEventListener("click", () => {
+						category.expenses = category.expenses.filter(
+							(item) => item.id !== expense.id
+						);
 
-        }
-      );
+						saveState();
 
+						render();
+					});
 
-      amountInput.addEventListener(
-        "input",
-        () => {
+					container.appendChild(row);
+				});
+			}
 
-          expense.amount =
-            Math.max(
-              0,
-              Number(amountInput.value) || 0
-            );
+			function updateCategoryVisuals(section, category) {
+				const spent = categorySpent(category);
 
-          update();
+				const target = categoryTarget(category);
 
-        }
-      );
+				const remaining = target - spent;
 
+				section.querySelector(".category-spent").textContent = money(spent);
 
-      deleteButton.addEventListener(
-        "click",
-        () => {
+				section.querySelector(".category-target").textContent = money(target);
 
-          category.expenses =
-            category.expenses.filter(
-              item =>
-                item.id !== expense.id
-            );
+				const remainingElement = section.querySelector(".category-remaining");
 
-          saveState();
+				if (remaining >= 0) {
+					remainingElement.textContent = `${money(remaining)} remaining`;
 
-          render();
+					remainingElement.style.color = category.color;
+				} else {
+					remainingElement.textContent = `${money(Math.abs(remaining))} over budget`;
 
-        }
-      );
+					remainingElement.style.color = "#dc2626";
+				}
 
+				const progress = target > 0 ? Math.min((spent / target) * 100, 100) : 0;
 
-      container.appendChild(row);
+				section.querySelectorAll(".expense-row").forEach((row, i) => {
+					const amount = Number(category.expenses[i] && category.expenses[i].amount) || 0;
 
-    }
-  );
+					row.querySelector(".expense-pct").textContent =
+						amount > 0 && target > 0
+							? `${(amount / target) * 100 < 1 ? "<1" : Math.round((amount / target) * 100)}%`
+							: "";
+				});
 
-}
+				const progressElement = section.querySelector(".category-progress");
 
+				progressElement.style.width = `${progress}%`;
 
-function updateCategoryVisuals(
-  section,
-  category
-) {
+				progressElement.style.background = category.color;
+			}
 
-  const spent =
-    categorySpent(category);
+			function renderOverview() {
+				const container = document.getElementById("overviewCategories");
 
-  const target =
-    categoryTarget(category);
+				container.innerHTML = "";
 
-  const remaining =
-    target - spent;
+				allCategories().forEach((category) => {
+					const spent = categorySpent(category);
 
+					const target = categoryTarget(category);
 
-  section.querySelector(
-    ".category-spent"
-  ).textContent =
-    money(spent);
+					const remaining = target - spent;
 
+					const card = document.createElement("div");
 
-  section.querySelector(
-    ".category-target"
-  ).textContent =
-    money(target);
+					card.className =
+						"flex items-center gap-2 rounded-full border border-slate-200 px-3 h-7 text-xs whitespace-nowrap";
 
-
-  const remainingElement =
-    section.querySelector(
-      ".category-remaining"
-    );
-
-
-  if (remaining >= 0) {
-
-    remainingElement.textContent =
-      `${money(remaining)} remaining`;
-
-    remainingElement.style.color =
-      category.color;
-
-  } else {
-
-    remainingElement.textContent =
-      `${money(Math.abs(remaining))} over budget`;
-
-    remainingElement.style.color =
-      "#dc2626";
-
-  }
-
-
-  const progress =
-    target > 0
-      ? Math.min(
-          (spent / target) * 100,
-          100
-        )
-      : 0;
-
-
-  section.querySelectorAll(".expense-row").forEach((row, i) => {
-
-    const amount =
-      Number(category.expenses[i] && category.expenses[i].amount) || 0;
-
-    row.querySelector(".expense-pct").textContent =
-      amount > 0 && target > 0
-        ? `${amount / target * 100 < 1 ? "<1" : Math.round(amount / target * 100)}%`
-        : "";
-
-  });
-
-
-  const progressElement =
-    section.querySelector(
-      ".category-progress"
-    );
-
-  progressElement.style.width =
-    `${progress}%`;
-
-  progressElement.style.background =
-    category.color;
-
-}
-
-
-function renderOverview() {
-
-  const container =
-    document.getElementById(
-      "overviewCategories"
-    );
-
-  container.innerHTML = "";
-
-
-  allCategories().forEach(
-    category => {
-
-      const spent =
-        categorySpent(category);
-
-      const target =
-        categoryTarget(category);
-
-      const remaining =
-        target - spent;
-
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "flex items-center gap-2 rounded-full border border-slate-200 px-3 h-7 text-xs whitespace-nowrap";
-
-      card.innerHTML = `
+					card.innerHTML = `
         <span class="w-2.5 h-2.5 rounded-full" style="background:${escapeHtml(category.color)}"></span>
         <span class="font-semibold max-w-[8rem] truncate">${escapeHtml(category.name)}</span>
         ${category.fixed ? "" : `<span class="chip-pct ${totalPercentage() > 100 ? "text-red-600 font-bold" : "text-slate-500"}">${Number(category.percentage)}%</span>`}
         <span class="${remaining >= 0 ? "text-slate-500" : "text-red-500 font-medium"}">${
-          remaining >= 0
-            ? money(spent) + " / " + money(target)
-            : money(Math.abs(remaining)) + " over"}</span>
+			remaining >= 0
+				? money(spent) + " / " + money(target)
+				: money(Math.abs(remaining)) + " over"
+		}</span>
       `;
 
+					container.appendChild(card);
+				});
 
-      container.appendChild(card);
+				const tracked = totalTracked();
 
-    }
-  );
+				const percentage = totalBudget() > 0 ? (tracked / totalBudget()) * 100 : 0;
 
+				document.getElementById("totalTracked").textContent = `${money(tracked)} tracked`;
 
-  const tracked =
-    totalTracked();
+				document.getElementById("totalUnallocated").textContent =
+					`${money(Math.max(0, totalBudget() - tracked))} unallocated`;
 
-  const percentage =
-    totalBudget() > 0
-      ? (tracked / totalBudget()) * 100
-      : 0;
+				document.getElementById("overallPercentage").textContent =
+					`${Math.round(percentage)}%`;
 
+				document.getElementById("overallProgress").style.width =
+					`${Math.min(percentage, 100)}%`;
+			}
 
-  document.getElementById(
-    "totalTracked"
-  ).textContent =
-    `${money(tracked)} tracked`;
+			function applyPercentageWarning() {
+				const total = totalPercentage();
+				const over = total > 100;
 
+				document.querySelectorAll(".category-percentage-input").forEach((input) => {
+					input.classList.toggle("text-red-600", over);
+					input.classList.toggle("!border-red-400", over);
+					input.classList.toggle("bg-red-50", over);
+					input.parentElement
+						.querySelector("span")
+						.classList.toggle("text-red-500", over);
+					input.title = over ? `Total is ${total}% (over 100%)` : "";
+				});
 
-  document.getElementById(
-    "totalUnallocated"
-  ).textContent =
-    `${money(Math.max(0, totalBudget() - tracked))} unallocated`;
+				document.querySelectorAll("#overviewCategories > div").forEach((chip) => {
+					chip.classList.toggle("border-red-300", over);
+					chip.classList.toggle("bg-red-50", over);
+				});
 
+				const banner = document.getElementById("percentWarning");
+				banner.classList.toggle("hidden", !over);
+				banner.textContent = over
+					? `⚠ Percentages total ${total}% — ${total - 100}% over 100%. Reduce a category.`
+					: "";
+			}
 
-  document.getElementById(
-    "overallPercentage"
-  ).textContent =
-    `${Math.round(percentage)}%`;
+			function update() {
+				state.income = Math.max(0, Number(document.getElementById("income").value) || 0);
 
+				state.duodecimos = Math.max(
+					0,
+					Number(document.getElementById("duodecimos").value) || 0
+				);
 
-  document.getElementById(
-    "overallProgress"
-  ).style.width =
-    `${Math.min(percentage, 100)}%`;
+				allCategories().forEach((category) => {
+					const section = document.querySelector(
+						`[data-category-id="${CSS.escape(category.id)}"]`
+					);
 
-}
+					if (section) {
+						updateCategoryVisuals(section, category);
+					}
+				});
 
+				renderOverview();
 
-function applyPercentageWarning() {
+				applyPercentageWarning();
 
-  const total = totalPercentage();
-  const over = total > 100;
+				saveState();
+			}
 
-  document.querySelectorAll(".category-percentage-input").forEach(input => {
-    input.classList.toggle("text-red-600", over);
-    input.classList.toggle("!border-red-400", over);
-    input.classList.toggle("bg-red-50", over);
-    input.parentElement.querySelector("span").classList.toggle("text-red-500", over);
-    input.title = over ? `Total is ${total}% (over 100%)` : "";
-  });
+			function exportJSON() {
+				const data = {
+					version: 3,
+					exportedAt: new Date().toISOString(),
 
-  document.querySelectorAll("#overviewCategories > div").forEach(chip => {
-    chip.classList.toggle("border-red-300", over);
-    chip.classList.toggle("bg-red-50", over);
-  });
+					income: state.income,
 
-  const banner = document.getElementById("percentWarning");
-  banner.classList.toggle("hidden", !over);
-  banner.textContent = over
-    ? `⚠ Percentages total ${total}% — ${total - 100}% over 100%. Reduce a category.`
-    : "";
+					duodecimos: state.duodecimos,
 
-}
+					duo: state.duo,
 
+					categories: state.categories
+				};
 
-function update() {
+				const blob = new Blob([JSON.stringify(data, null, 2)], {
+					type: "application/json"
+				});
 
-  state.income =
-    Math.max(
-      0,
-      Number(
-        document.getElementById(
-          "income"
-        ).value
-      ) || 0
-    );
+				const url = URL.createObjectURL(blob);
 
+				const link = document.createElement("a");
 
-  state.duodecimos =
-    Math.max(
-      0,
-      Number(
-        document.getElementById("duodecimos").value
-      ) || 0
-    );
+				link.href = url;
 
+				link.download = "budget-planner.json";
 
-  allCategories().forEach(
-    category => {
+				link.click();
 
-      const section =
-        document.querySelector(
-          `[data-category-id="${CSS.escape(category.id)}"]`
-        );
+				URL.revokeObjectURL(url);
+			}
 
-      if (section) {
+			function importJSON(file) {
+				const reader = new FileReader();
 
-        updateCategoryVisuals(
-          section,
-          category
-        );
+				reader.onload = (event) => {
+					try {
+						const imported = JSON.parse(event.target.result);
 
-      }
+						if (
+							!imported ||
+							typeof imported !== "object" ||
+							!Array.isArray(imported.categories)
+						) {
+							throw new Error("Invalid budget file");
+						}
 
-    }
-  );
+						state = {
+							income: Number(imported.income) || 0,
 
+							duodecimos: Math.max(0, Number(imported.duodecimos) || 0),
 
-  renderOverview();
+							duo: normalizeDuo(imported.duo),
 
-  applyPercentageWarning();
+							categories: imported.categories.map((category) => ({
+								id: category.id || generateId(),
 
-  saveState();
+								name: category.name || "Category",
 
-}
+								percentage: Math.max(
+									0,
+									Math.min(100, Number(category.percentage) || 0)
+								),
 
+								color: /^#[0-9A-Fa-f]{6}$/.test(category.color || "")
+									? category.color
+									: "#64748b",
 
-function exportJSON() {
+								description: category.description || "",
 
-  const data = {
-    version: 3,
-    exportedAt:
-      new Date().toISOString(),
+								expenses: Array.isArray(category.expenses) ? category.expenses : []
+							}))
+						};
 
-    income:
-      state.income,
+						saveState();
 
-    duodecimos:
-      state.duodecimos,
+						render();
+					} catch {
+						alert("Could not import this JSON file.");
+					}
+				};
 
-    duo:
-      state.duo,
+				reader.readAsText(file);
+			}
 
-    categories:
-      state.categories
-  };
+			// Income
+			document.getElementById("income").addEventListener("input", update);
 
+			document.getElementById("duodecimos").addEventListener("input", update);
 
-  const blob =
-    new Blob(
-      [
-        JSON.stringify(
-          data,
-          null,
-          2
-        )
-      ],
-      {
-        type: "application/json"
-      }
-    );
+			// Export
+			document.getElementById("exportBtn").addEventListener("click", exportJSON);
 
+			// Import
+			document.getElementById("importInput").addEventListener("change", (event) => {
+				const file = event.target.files[0];
 
-  const url =
-    URL.createObjectURL(blob);
+				if (file) {
+					importJSON(file);
+				}
 
+				event.target.value = "";
+			});
 
-  const link =
-    document.createElement("a");
+			// Theme (auto follows the system, or force light/dark)
+			const THEME_KEY = "budget-theme";
+			const THEME_MODES = ["auto", "light", "dark"];
+			const THEME_LABELS = { auto: "🌓 Auto", light: "☀️ Light", dark: "🌙 Dark" };
+			const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
 
-  link.href = url;
+			let themeMode = "auto";
+			try {
+				themeMode = localStorage.getItem(THEME_KEY) || "auto";
+			} catch {}
+			if (!THEME_MODES.includes(themeMode)) themeMode = "auto";
 
-  link.download =
-    "budget-planner.json";
+			function applyTheme() {
+				const dark = themeMode === "dark" || (themeMode === "auto" && systemDark.matches);
+				document.documentElement.classList.toggle("dark", dark);
+				document.getElementById("themeBtn").textContent = THEME_LABELS[themeMode];
+			}
 
-  link.click();
+			document.getElementById("themeBtn").addEventListener("click", () => {
+				themeMode = THEME_MODES[(THEME_MODES.indexOf(themeMode) + 1) % THEME_MODES.length];
+				try {
+					localStorage.setItem(THEME_KEY, themeMode);
+				} catch {}
+				applyTheme();
+			});
 
+			systemDark.addEventListener("change", applyTheme);
 
-  URL.revokeObjectURL(url);
+			applyTheme();
 
-}
-
-
-function importJSON(file) {
-
-  const reader =
-    new FileReader();
-
-
-  reader.onload =
-    event => {
-
-      try {
-
-        const imported =
-          JSON.parse(
-            event.target.result
-          );
-
-
-        if (
-          !imported ||
-          typeof imported !== "object" ||
-          !Array.isArray(
-            imported.categories
-          )
-        ) {
-
-          throw new Error(
-            "Invalid budget file"
-          );
-
-        }
-
-
-        state = {
-
-          income:
-            Number(imported.income) || 0,
-
-          duodecimos:
-            Math.max(0, Number(imported.duodecimos) || 0),
-
-          duo:
-            normalizeDuo(imported.duo),
-
-          categories:
-            imported.categories.map(
-              category => ({
-                id:
-                  category.id ||
-                  generateId(),
-
-                name:
-                  category.name ||
-                  "Category",
-
-                percentage:
-                  Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      Number(
-                        category.percentage
-                      ) || 0
-                    )
-                  ),
-
-                color:
-                  /^#[0-9A-Fa-f]{6}$/.test(
-                    category.color || ""
-                  )
-                    ? category.color
-                    : "#64748b",
-
-                description:
-                  category.description ||
-                  "",
-
-                expenses:
-                  Array.isArray(
-                    category.expenses
-                  )
-                    ? category.expenses
-                    : []
-              })
-            )
-
-        };
-
-
-        saveState();
-
-        render();
-
-
-      } catch {
-
-        alert(
-          "Could not import this JSON file."
-        );
-
-      }
-
-    };
-
-
-  reader.readAsText(file);
-
-}
-
-
-// Income
-document
-  .getElementById("income")
-  .addEventListener(
-    "input",
-    update
-  );
-
-
-document
-  .getElementById("duodecimos")
-  .addEventListener(
-    "input",
-    update
-  );
-
-
-// Export
-document
-  .getElementById("exportBtn")
-  .addEventListener(
-    "click",
-    exportJSON
-  );
-
-
-// Import
-document
-  .getElementById("importInput")
-  .addEventListener(
-    "change",
-    event => {
-
-      const file =
-        event.target.files[0];
-
-      if (file) {
-        importJSON(file);
-      }
-
-      event.target.value = "";
-
-    }
-  );
-
-
-// Theme (auto follows the system, or force light/dark)
-const THEME_KEY = "budget-theme";
-const THEME_MODES = ["auto", "light", "dark"];
-const THEME_LABELS = { auto: "🌓 Auto", light: "☀️ Light", dark: "🌙 Dark" };
-const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
-
-let themeMode = "auto";
-try { themeMode = localStorage.getItem(THEME_KEY) || "auto"; } catch {}
-if (!THEME_MODES.includes(themeMode)) themeMode = "auto";
-
-function applyTheme() {
-  const dark = themeMode === "dark" || (themeMode === "auto" && systemDark.matches);
-  document.documentElement.classList.toggle("dark", dark);
-  document.getElementById("themeBtn").textContent = THEME_LABELS[themeMode];
-}
-
-document.getElementById("themeBtn").addEventListener("click", () => {
-  themeMode = THEME_MODES[(THEME_MODES.indexOf(themeMode) + 1) % THEME_MODES.length];
-  try { localStorage.setItem(THEME_KEY, themeMode); } catch {}
-  applyTheme();
-});
-
-systemDark.addEventListener("change", applyTheme);
-
-applyTheme();
-
-
-// Initial render
-render();
-
-</script>
-
-</body>
+			// Initial render
+			render();
+		</script>
+	</body>
 </html>

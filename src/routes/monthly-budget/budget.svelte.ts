@@ -37,10 +37,14 @@ const EXTRA_INCOME_COLORS = ["#ec4899", "#14b8a6"];
 
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
 
-const currency = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
+// Euro sign after the amount (1,250.00€), with English digit grouping.
+const amount = new Intl.NumberFormat("en-IE", {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
 
 export function money(value: number): string {
-	return currency.format(Number(value) || 0);
+	return `${amount.format(Number(value) || 0)}€`;
 }
 
 export function generateId(): string {

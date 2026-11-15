@@ -12,10 +12,14 @@ export interface VatResult {
 	amount: number;
 }
 
-const currency = new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" });
+// Euro sign after the amount (1,250.00€), with English digit grouping.
+const amount = new Intl.NumberFormat("en-IE", {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
 
 export function money(value: number): string {
-	return currency.format(value);
+	return `${amount.format(value)}€`;
 }
 
 export function isFilled(value: NumField | undefined): value is number {

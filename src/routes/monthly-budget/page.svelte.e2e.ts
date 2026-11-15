@@ -16,7 +16,7 @@ test("renders default categories with targets", async ({ page }) => {
 
 	const needs = cards(page).nth(0);
 	await expect(needs.getByLabel("Category name")).toHaveValue("Needs");
-	await expect(needs.getByTestId("category-remaining")).toHaveText("€1,250.00 remaining");
+	await expect(needs.getByTestId("category-remaining")).toHaveText("1,250.00€ remaining");
 });
 
 test("adding expenses updates totals and focuses the new row", async ({ page }) => {
@@ -28,18 +28,18 @@ test("adding expenses updates totals and focuses the new row", async ({ page }) 
 	await name.fill("Rent");
 	await needs.getByLabel("Amount").fill("1000");
 
-	await expect(needs.getByTestId("category-spent")).toHaveText("€1,000.00");
-	await expect(needs.getByTestId("category-remaining")).toHaveText("€250.00 remaining");
+	await expect(needs.getByTestId("category-spent")).toHaveText("1,000.00€");
+	await expect(needs.getByTestId("category-remaining")).toHaveText("250.00€ remaining");
 	await expect(needs.getByTestId("expense-row")).toContainText("80%");
-	await expect(page.getByTestId("total-tracked")).toHaveText("€1,000.00 tracked");
-	await expect(page.getByTestId("total-unallocated")).toHaveText("€1,500.00 unallocated");
+	await expect(page.getByTestId("total-tracked")).toHaveText("1,000.00€ tracked");
+	await expect(page.getByTestId("total-unallocated")).toHaveText("1,500.00€ unallocated");
 
 	await needs.getByLabel("Amount").fill("1300.5");
-	await expect(needs.getByTestId("category-remaining")).toHaveText("€50.50 over budget");
+	await expect(needs.getByTestId("category-remaining")).toHaveText("50.50€ over budget");
 
 	await needs.getByRole("button", { name: "Delete expense" }).click();
 	await expect(needs.getByTestId("expense-row")).toHaveCount(0);
-	await expect(page.getByTestId("total-tracked")).toHaveText("€0.00 tracked");
+	await expect(page.getByTestId("total-tracked")).toHaveText("0.00€ tracked");
 });
 
 test("warns when percentages exceed 100%", async ({ page }) => {
@@ -58,8 +58,8 @@ test("duodécimos card uses the duodécimos amount as target", async ({ page }) 
 	await page.getByTestId("duodecimos").fill("300");
 	const duo = cards(page).nth(3);
 	await expect(duo.getByLabel("Category percentage")).toHaveCount(0);
-	await expect(duo.getByTestId("category-remaining")).toHaveText("€300.00 remaining");
-	await expect(page.getByTestId("total-unallocated")).toHaveText("€2,800.00 unallocated");
+	await expect(duo.getByTestId("category-remaining")).toHaveText("300.00€ remaining");
+	await expect(page.getByTestId("total-unallocated")).toHaveText("2,800.00€ unallocated");
 });
 
 test("typing decimals in income is not clobbered", async ({ page }) => {
@@ -79,7 +79,7 @@ test("state persists across reloads", async ({ page }) => {
 	await page.reload();
 	await expect(page.getByTestId("income")).toHaveValue("3000");
 	await expect(cards(page).nth(1).getByPlaceholder("Expense")).toHaveValue("Cinema");
-	await expect(cards(page).nth(1).getByTestId("category-spent")).toHaveText("€20.00");
+	await expect(cards(page).nth(1).getByTestId("category-spent")).toHaveText("20.00€");
 });
 
 test("export then import round-trips the budget", async ({ page }) => {
@@ -150,9 +150,9 @@ test("adds up to two extra incomes with their own cards next to duodécimos", as
 	await fields.nth(1).fill("100");
 	await expect(page.getByLabel("Extra income 1", { exact: true })).toHaveValue("400");
 	// 2500 income + 400 + 100, nothing tracked yet
-	await expect(page.getByTestId("total-unallocated")).toHaveText("€3,000.00 unallocated");
+	await expect(page.getByTestId("total-unallocated")).toHaveText("3,000.00€ unallocated");
 	await expect(cards(page).nth(4).getByTestId("category-remaining")).toHaveText(
-		"€400.00 remaining"
+		"400.00€ remaining"
 	);
 
 	// Renaming the card renames the field label.
@@ -167,7 +167,7 @@ test("adds up to two extra incomes with their own cards next to duodécimos", as
 	await expect(fields).toHaveCount(1);
 	await expect(cards(page)).toHaveCount(5);
 	await expect(add).toBeVisible();
-	await expect(page.getByTestId("total-unallocated")).toHaveText("€2,600.00 unallocated");
+	await expect(page.getByTestId("total-unallocated")).toHaveText("2,600.00€ unallocated");
 
 	// The freed name is reused.
 	await add.click();

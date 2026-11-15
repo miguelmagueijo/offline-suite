@@ -1,3 +1,18 @@
-# allow crawling everything by default
+# Search engines may index the site.
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: DuckDuckBot
+User-agent: Slurp
+User-agent: Applebot
+User-agent: YandexBot
+User-agent: Baiduspider
+Allow: /
+
+# Opt out of AI training even for search engines that offer a separate token.
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Disallow: /
+
+# Everything else (AI crawlers, scrapers, SEO bots) is denied.
 User-agent: *
-Disallow:
+Disallow: /

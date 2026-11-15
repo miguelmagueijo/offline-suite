@@ -1,0 +1,52 @@
+name: Update production environment
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: deploy-production
+    cancel-in-progress: false
+
+jobs:
+    verify:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 10.28.2
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm lint
+            - run: pnpm check
+            - run: pnpm exec playwright install --with-deps chromium
+            # Playwright's webServer runs the production build before testing.
+            - run: pnpm exec playwright test
+
+    deploy:
+        needs: verify
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: Deploy via SSH
+              uses: appleboy/ssh-action@2ead5e36573f08b82fbfce1504f1a4b05a647c6f # v1.2.2
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: ${{ secrets.SSH_PORT }}
+                  command_timeout: 20m
+                  script: |
+                      set -euo pipefail
+                      cd "${{ secrets.PROJECT_FOLDER }}"
+                      git fetch origin main
+                      git reset --hard "${{ github.sha }}"
+                      ./deploy.sh

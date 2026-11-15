@@ -4,9 +4,7 @@ services:
     app:
         build:
             context: .
-        # Local tag only, never pushed. deploy.sh sets IMAGE_TAG to the git SHA
-        # so the previous image stays around for rollback.
-        image: offline-suite:${IMAGE_TAG:-latest}
+        image: offline-suite
         restart: unless-stopped
         ports:
             - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:${PORT:-3000}"

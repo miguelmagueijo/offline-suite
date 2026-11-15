@@ -68,7 +68,7 @@
 					step="1"
 					suffix="%"
 					suffixClass="text-sm {overAllocated ? 'text-red-500' : ''}"
-					wrapperClass="w-20 shrink-0"
+					wrapperClass="-mr-2 w-20 shrink-0"
 					aria-label="Category percentage"
 					title={overAllocated ? `Total is ${totalPercentage}% (over 100%)` : ""}
 					class="h-8 rounded-md border pr-6 pl-2 text-right text-base font-bold focus:ring-0 focus:outline-none {overAllocated

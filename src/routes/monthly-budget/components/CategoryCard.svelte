@@ -58,7 +58,7 @@
 				bind:value={category.name}
 				placeholder="Title"
 				aria-label="Category name"
-				class="h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-base font-bold hover:border-slate-200 focus:border-blue-400 focus:ring-0 focus:outline-none dark:hover:border-slate-700"
+				class="h-8 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-base font-bold hover:border-slate-200 focus:border-violet-400 focus:ring-0 focus:outline-none dark:hover:border-slate-700"
 			/>
 
 			{#if category.fixed}
@@ -79,7 +79,7 @@
 					title={overAllocated ? `Total is ${totalPercentage}% (over 100%)` : ""}
 					class="h-8 rounded-md border pr-6 pl-2 text-right text-base font-bold focus:ring-0 focus:outline-none {overAllocated
 						? 'border-red-400 bg-red-50 text-red-600 dark:border-red-400 dark:bg-red-500/10 dark:text-red-400'
-						: 'border-transparent bg-transparent hover:border-slate-200 focus:border-blue-400 dark:hover:border-slate-700'}"
+						: 'border-transparent bg-transparent hover:border-slate-200 focus:border-violet-400 dark:hover:border-slate-700'}"
 				/>
 			{/if}
 		</div>

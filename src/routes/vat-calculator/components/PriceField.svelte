@@ -29,7 +29,7 @@
 		<input
 			type="number"
 			bind:value
-			class="no-spin h-10 w-full rounded-md border border-slate-300 bg-white pr-8 pl-3 text-lg font-bold text-slate-900 shadow-xs placeholder:font-normal placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-3 focus:ring-blue-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600 dark:hover:border-slate-600 dark:focus:border-blue-400 dark:focus:ring-blue-400/25 {className}"
+			class="no-spin h-10 w-full rounded-md border border-slate-300 bg-white pr-8 pl-3 text-lg font-bold text-slate-900 shadow-xs placeholder:font-normal placeholder:text-slate-400 hover:border-slate-400 focus:border-violet-500 focus:ring-3 focus:ring-violet-500/20 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600 dark:hover:border-slate-600 dark:focus:border-violet-400 dark:focus:ring-violet-400/25 {className}"
 			{...rest}
 		/>
 		<span

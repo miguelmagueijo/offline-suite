@@ -5,6 +5,29 @@
 /* Class-based dark mode, toggled on <html> by the theme store. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * oSuite palette. The brand pair is ink (#070016) and paper (#F2EBFF): dark mode is
+ * paper-on-ink, light mode the inverse. The neutral "slate" scale is re-tinted towards
+ * the brand violet so every surface, border and muted text matches, with paper as
+ * slate-100 and ink as slate-950.
+ */
+@theme {
+	--color-ink: #070016;
+	--color-paper: #f2ebff;
+
+	--color-slate-50: oklch(0.982 0.008 300);
+	--color-slate-100: #f2ebff;
+	--color-slate-200: oklch(0.9 0.03 298);
+	--color-slate-300: oklch(0.83 0.04 296);
+	--color-slate-400: oklch(0.68 0.05 295);
+	--color-slate-500: oklch(0.55 0.055 294);
+	--color-slate-600: oklch(0.45 0.06 293);
+	--color-slate-700: oklch(0.35 0.065 292);
+	--color-slate-800: oklch(0.25 0.065 291);
+	--color-slate-900: oklch(0.17 0.06 290);
+	--color-slate-950: #070016;
+}
+
 html {
 	color-scheme: light;
 }
@@ -14,7 +37,7 @@ html.dark {
 }
 
 body {
-	@apply min-h-screen bg-slate-100 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200;
+	@apply min-h-screen bg-paper text-ink antialiased dark:bg-ink dark:text-paper;
 }
 
 /* Hide the native up/down arrows on number inputs. */

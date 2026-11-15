@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("portal lists apps and links to them", async ({ page }) => {
 	await page.goto("/");
-	await expect(page.getByRole("heading", { level: 1 })).toHaveText("Offline Suite");
+	await expect(page.getByRole("heading", { level: 1 })).toHaveText("oSuite");
 
 	const card = page.getByRole("main").getByRole("link", { name: /Monthly Budget/ });
 	await expect(card).toBeVisible();

@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>VAT Calculator · Offline Suite</title>
+	<title>VAT Calculator · oSuite</title>
 </svelte:head>
 
 <div class="py-6">

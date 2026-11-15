@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { ArrowUpRight, GitFork, LayoutGrid } from "@lucide/svelte";
+	import { ArrowUpRight, GitFork } from "@lucide/svelte";
 	import { apps } from "#lib/apps.js";
+	import BrandLogo from "./BrandLogo.svelte";
 
 	const REPO_URL = "https://github.com/miguelmagueijo/offline-suite";
 </script>
 
 <footer
-	class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+	class="border-t border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900/40"
 	data-testid="site-footer"
 >
 	<div
@@ -16,10 +17,10 @@
 	>
 		<a
 			href={resolve("/")}
-			class="inline-flex items-center gap-2 text-lg font-bold tracking-tight"
+			class="inline-flex items-center gap-2.5 text-lg font-bold tracking-tight"
 		>
-			<LayoutGrid class="size-5 text-blue-600 dark:text-blue-400" />
-			Offline Suite
+			<BrandLogo class="size-7" />
+			oSuite
 		</a>
 
 		<nav aria-label="Apps">
@@ -36,7 +37,7 @@
 						<a
 							href={resolve(app.href)}
 							aria-current={current ? "page" : undefined}
-							class="inline-flex items-center gap-2 text-sm transition hover:text-blue-600 dark:hover:text-blue-400 {current
+							class="inline-flex items-center gap-2 text-sm transition hover:text-violet-600 dark:hover:text-violet-400 {current
 								? 'font-semibold text-slate-900 dark:text-slate-100'
 								: 'text-slate-600 dark:text-slate-400'}"
 						>

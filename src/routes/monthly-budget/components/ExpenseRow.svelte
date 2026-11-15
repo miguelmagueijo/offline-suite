@@ -26,7 +26,7 @@
 		bind:value={expense.name}
 		placeholder="Expense"
 		data-expense-name
-		class="h-7 min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 text-sm focus:border-blue-400 focus:ring-0 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-600"
+		class="h-7 min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2 text-sm focus:border-violet-400 focus:ring-0 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-600"
 	/>
 
 	<NumberInput
@@ -36,7 +36,7 @@
 		suffixClass="text-xs"
 		wrapperClass="w-20 shrink-0"
 		aria-label="Amount"
-		class="h-7 rounded-md border border-slate-200 bg-white pr-6 pl-2 text-right text-sm focus:border-blue-400 focus:ring-0 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
+		class="h-7 rounded-md border border-slate-200 bg-white pr-6 pl-2 text-right text-sm focus:border-violet-400 focus:ring-0 focus:outline-none dark:border-slate-800 dark:bg-slate-950"
 	/>
 
 	<span

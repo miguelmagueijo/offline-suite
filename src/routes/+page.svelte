@@ -2,6 +2,7 @@
 	import { ArrowUpRight, Search, Sparkles } from "@lucide/svelte";
 	import { resolve } from "$app/paths";
 	import { apps } from "#lib/apps.js";
+	import BrandLogo from "#lib/components/BrandLogo.svelte";
 
 	let query = $state("");
 
@@ -17,7 +18,7 @@
 </script>
 
 <svelte:head>
-	<title>Offline Suite</title>
+	<title>oSuite · Offline browser tools</title>
 </svelte:head>
 
 <div class="relative grow overflow-hidden">
@@ -28,14 +29,15 @@
 	></div>
 
 	<div class="relative pt-16 pb-20">
-		<section class="text-center">
-			<h1 class="text-4xl font-bold tracking-tight sm:text-5xl">Offline Suite</h1>
+		<section class="flex flex-col items-center text-center">
+			<BrandLogo class="size-20 drop-shadow-[0_8px_24px_rgb(124_58_237/0.35)] sm:size-24" />
+			<h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">oSuite</h1>
 			<p class="mx-auto mt-3 max-w-xl text-slate-500 dark:text-slate-400">
 				A collection of small, focused tools that run entirely in your browser. Your data
 				never leaves this device.
 			</p>
 
-			<label class="relative mx-auto mt-8 block max-w-md">
+			<label class="relative mt-8 block w-full max-w-md">
 				<span class="sr-only">Search apps</span>
 				<Search
 					class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
@@ -44,7 +46,7 @@
 					type="search"
 					bind:value={query}
 					placeholder="Search apps…"
-					class="h-10 w-full rounded-lg border-slate-300 bg-white pl-9 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:placeholder:text-slate-500 dark:focus:ring-blue-500/30"
+					class="h-10 w-full rounded-lg border-slate-300 bg-white pl-9 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-200 dark:border-slate-700 dark:bg-slate-900 dark:placeholder:text-slate-500 dark:focus:ring-violet-500/30"
 				/>
 			</label>
 		</section>
@@ -55,7 +57,7 @@
 				<li>
 					<a
 						href={resolve(app.href)}
-						class="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+						class="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
 					>
 						<div class="flex items-start justify-between">
 							<span

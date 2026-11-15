@@ -2,7 +2,7 @@
 	interface Props {
 		/** 0–100 */
 		value: number;
-		/** CSS color; falls back to the default blue when omitted. */
+		/** CSS color; falls back to the default violet when omitted. */
 		color?: string;
 		testid?: string;
 	}
@@ -18,7 +18,7 @@
 	aria-valuenow={Math.round(value)}
 >
 	<div
-		class="h-full rounded-full transition-all {color ? '' : 'bg-blue-600 dark:bg-blue-500'}"
+		class="h-full rounded-full transition-all {color ? '' : 'bg-violet-600 dark:bg-violet-500'}"
 		style:width="{Math.min(Math.max(value, 0), 100)}%"
 		style:background={color}
 		data-testid={testid}

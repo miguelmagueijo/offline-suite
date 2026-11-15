@@ -7,9 +7,9 @@ services:
         image: offline-suite
         restart: unless-stopped
         ports:
-            - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-3000}:${PORT:-3000}"
+            - ${PORT:-3000}:3000
         environment:
-            PORT: ${PORT:-3000}
+            PORT: 3000
             ORIGIN: ${ORIGIN:?ORIGIN must be set in .env (e.g. https://example.com)}
             # Only needed when a reverse proxy sits in front and ORIGIN is not set.
             PROTOCOL_HEADER: ${PROTOCOL_HEADER:-}
